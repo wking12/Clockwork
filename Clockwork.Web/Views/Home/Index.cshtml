@@ -1,0 +1,106 @@
+﻿<script>
+    function UserAction() {
+        var requestedTimeZoneId = document.getElementById("time-zone-id").value;
+        if (requestedTimeZoneId) {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    var responseJson = JSON.parse(this.responseText);
+                    document.getElementById("current-time-query-id").innerHTML = responseJson.currentTimeQueryId;
+                    document.getElementById("time").innerHTML = responseJson.time;
+                    document.getElementById("client-ip").innerHTML = responseJson.clientIp;
+                    document.getElementById("utc-time").innerHTML = responseJson.utcTime;
+                    document.getElementById("requested-time-zone").innerHTML = responseJson.requestedTimeZoneId;
+
+                    GetDatabaseEntries();
+                }
+            };
+            xhttp.open("GET", "http://localhost:58449/api/currenttime?timezoneid=" + requestedTimeZoneId, true);
+            xhttp.setRequestHeader("Content-type", "application/json");
+            xhttp.send();
+        }
+    }
+
+    function GetDatabaseEntries() {
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                var responseJson = JSON.parse(this.responseText);
+                var databaseEntriesElment = document.getElementById("database-entries");
+                databaseEntriesElment.innerHTML = "";
+                for (var i = 0; i < responseJson.length; i++) {
+                    databaseEntriesElment.insertAdjacentHTML("beforeend",
+                        `<tr>
+                            <th scope="row">` + responseJson[i].currentTimeQueryId + `</th>
+                            <td>` + responseJson[i].time + `</td>
+                            <td>` + responseJson[i].clientIp + `</td>
+                            <td>` + responseJson[i].utcTime + `</td>
+                            <td>` + responseJson[i].requestedTimeZoneId + `</td>
+                        </tr>`);
+                }
+            }
+        };
+        xhttp.open("GET", "http://localhost:58449/api/databaseentries", true);
+        xhttp.setRequestHeader("Content-type", "application/json");
+        xhttp.send();
+    }
+
+    GetDatabaseEntries();
+</script>
+
+<div class="jumbotron text-center">
+    <h1>AWH Clockwork Project @ViewData["Version"] on @ViewData["Runtime"]!</h1>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col text-center">
+            <h2>Current Time</h2>
+            <input id="time-zone-id" type="text" placeholder="Time Zone ID" />
+            <button class="btn btn-primary btn-sm" type="submit" onclick="UserAction()">Get the time</button>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <div class="font-weight-bold">Current Time Query Id:</div>
+            <div id="current-time-query-id"></div>
+        </div>
+        <div class="col">
+            <div class="font-weight-bold">Time:</div>
+            <div id="time"></div>
+        </div>
+        <div class="col">
+            <div class="font-weight-bold">Client IP:</div>
+            <div id="client-ip"></div>
+        </div>
+        <div class="col">
+            <div class="font-weight-bold">UTC Time:</div>
+            <div id="utc-time"></div>
+        </div>
+        <div class="col">
+            <div class="font-weight-bold">Requested Time Zone:</div>
+            <div id="requested-time-zone"></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col text-center">
+            <h2>All Database Entries</h2>
+        </div>
+    </div>
+    <div class="row">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Current Time Query Id</th>
+                        <th scope="col">Time</th>
+                        <th scope="col">Client IP</th>
+                        <th scope="col">UTC Time</th>
+                        <th scope="col">Requested Time Zone</th>
+                    </tr>
+                </thead>
+                <tbody id="database-entries"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
